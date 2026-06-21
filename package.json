@@ -1,0 +1,15 @@
+{
+  "name": "pos-supabase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:ef": "deno test supabase/functions/_test/",
+    "test:db": "supabase test db",
+    "test:all": "npm run test:ef && npm run test:db",
+    "db:reset": "supabase db reset"
+  },
+  "devDependencies": {
+    "supabase": "^2.23.0"
+  }
+}

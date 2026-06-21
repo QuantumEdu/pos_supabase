@@ -1,0 +1,42 @@
+schema: spec-driven
+
+context: |
+  Stack: Supabase CLI, Deno, PostgreSQL, RLS, Edge Functions
+  Architecture: Multi-tenant SaaS POS for supplements/vitamins/nutraceuticals
+  Backend: Supabase-only — no external backends in V1
+  Critical ops: Edge Functions → RPC SQL (transactional)
+  Security: RLS on all operational tables (company_id, branch_id)
+  Frontend consumers: Connect via SDK+RLS for reads or EFs for critical ops (not part of project scaffold)
+  Phase: Pre-development (Edge Functions scaffold ready)
+  Existing docs: constitution.md, spec.md, plan_1ra_parte.md, plan_2da_parte.md
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Scope changes to one business domain at a time
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - All inventory changes MUST go through movements (no direct stock edits)
+    - All critical operations MUST be transactional (atomic)
+  design:
+    - Edge Functions are the ONLY backend layer (no external services in V1)
+    - All critical business logic MUST be in RPC SQL functions, not in frontend
+    - Include sequence diagrams for multi-step flows (sales, purchases, returns)
+    - Document RLS policies per table
+  tasks:
+    - Group by SDD phase, use hierarchical numbering
+    - Keep tasks completable in one session
+    - Each task must include its verification criteria
+  apply:
+    - Follow existing code patterns when present
+    strict_tdd: false
+    test_command: "deno test supabase/functions/_test/"
+    build_command: "supabase db reset"
+  verify:
+    test_command: "deno test supabase/functions/_test/"
+    build_command: "supabase start"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+    - Confirm with user before overwriting main specs

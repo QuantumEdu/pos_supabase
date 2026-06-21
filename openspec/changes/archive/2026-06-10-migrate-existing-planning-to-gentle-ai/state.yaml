@@ -1,0 +1,65 @@
+# SDD Change State — Migrate Existing Planning to Gentle AI
+# Tracks DAG status and dependency chain per R10
+
+change: migrate-existing-planning-to-gentle-ai
+status: archived
+phase: archive
+
+depends_on: []
+
+downstream:
+  - change: catalog-domain
+    depends_on_this: true
+  - change: purchasing-domain
+    depends_on_this: true
+  - change: inventory-domain
+    depends_on_this: true
+  - change: customers-demand-domain
+    depends_on_this: true
+  - change: pos-sales-domain
+    depends_on_this: true
+  - change: cash-session-domain
+    depends_on_this: true
+  - change: credit-payments-domain
+    depends_on_this: true
+  - change: returns-domain
+    depends_on_this: true
+  - change: dashboard-reports-domain
+    depends_on_this: true
+  - change: audit-domain
+    depends_on_this: true
+
+roadmap:
+  - id: 1
+    name: bootstrap-architecture
+    status: archived
+  - id: 2
+    name: catalog-domain
+    status: pending
+  - id: 3
+    name: purchasing-domain
+    status: pending
+  - id: 4
+    name: inventory-domain
+    status: pending
+  - id: 5
+    name: customers-demand-domain
+    status: pending
+  - id: 6
+    name: pos-sales-domain
+    status: pending
+  - id: 7
+    name: cash-session-domain
+    status: pending
+  - id: 8
+    name: credit-payments-domain
+    status: pending
+  - id: 9
+    name: returns-domain
+    status: pending
+  - id: 10
+    name: dashboard-reports-domain
+    status: pending
+  - id: 11
+    name: audit-domain
+    status: pending

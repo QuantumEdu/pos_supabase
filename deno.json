@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.ns", "ESNext"]
+  },
+  "tasks": {
+    "test": "deno test supabase/functions/_test/",
+    "test:ef": "deno test supabase/functions/_test/",
+    "test:db": "supabase test db",
+    "lint": "deno lint supabase/functions/"
+  },
+  "imports": {
+    "@shared/": "./supabase/functions/_shared/",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
+  },
+  "lint": {
+    "include": ["supabase/functions/"]
+  }
+}
