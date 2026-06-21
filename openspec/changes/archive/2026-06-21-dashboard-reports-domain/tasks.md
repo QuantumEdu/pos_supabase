@@ -37,9 +37,9 @@
 **Est. lines**: ~300
 **Budget risk**: Low
 
-[ ] 3.1 — Create `supabase/functions/export-csv/index.ts` — 8-step pattern: CORS, auth, admin role, Zod validate, call fn_export_entities RPC, set Content-Disposition header, stream CSV, audit placeholder
-[ ] 3.2 — Create `supabase/functions/_shared/export_csv_handler.ts` — shared handler for CSV export
-[ ] 3.3 — Write Deno tests for CSV export EF
+[x] 3.1 — Create `supabase/functions/export-csv/index.ts` — 8-step pattern: CORS, auth, admin role, Zod validate, call fn_export_entities RPC, set Content-Disposition header, stream CSV, audit placeholder
+[x] 3.2 — Create `supabase/functions/_shared/export_csv_handler.ts` — shared handler for CSV export
+[x] 3.3 — Write Deno tests for CSV export EF
 
 ---
 
