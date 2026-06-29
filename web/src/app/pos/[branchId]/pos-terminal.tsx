@@ -31,6 +31,7 @@ type SupportedCustomer = {
   name: string;
   phone: string | null;
   email: string | null;
+  creditLimit: number | null;
   outstandingAmount: number;
   balances: Array<{
     id: string;
@@ -954,6 +955,14 @@ export function PosTerminal({
                     <p className="mt-1">
                       Saldo pendiente actual: {formatCurrency(selectedCustomer.outstandingAmount)}
                     </p>
+                    {selectedCustomer.creditLimit !== null && (
+                      <p className="mt-1">
+                        Límite de crédito: {formatCurrency(selectedCustomer.creditLimit)}
+                        <span className={selectedCustomer.outstandingAmount >= selectedCustomer.creditLimit ? " ml-2 font-semibold text-red-600" : " ml-2 text-zinc-400"}>
+                          ({((selectedCustomer.outstandingAmount / selectedCustomer.creditLimit) * 100).toFixed(0)}% usado)
+                        </span>
+                      </p>
+                    )}
                     <p className="mt-1">
                       Saldos abiertos en esta sucursal: {selectedCustomer.balances.length}
                     </p>
@@ -989,9 +998,25 @@ export function PosTerminal({
               </select>
             </label>
 
-            {paymentMethod === "credit" && (
+            {paymentMethod === "credit" && selectedCustomer && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                El crédito exige un cliente seleccionado. El saldo se sembrará automáticamente en `customer_balances` cuando la venta se registre.
+                {selectedCustomer.creditLimit !== null ? (
+                  <>
+                    Crédito disponible: {formatCurrency(selectedCustomer.creditLimit - selectedCustomer.outstandingAmount)}
+                    {" · "}Límite: {formatCurrency(selectedCustomer.creditLimit)}
+                    {" · "}Usado: {formatCurrency(selectedCustomer.outstandingAmount)}
+                    {selectedCustomer.outstandingAmount >= selectedCustomer.creditLimit && (
+                      <span className="ml-1 font-bold text-red-700">¡Límite agotado!</span>
+                    )}
+                  </>
+                ) : (
+                  <>Crédito sin límite definido para este cliente.</>
+                )}
+              </div>
+            )}
+            {paymentMethod === "credit" && !selectedCustomer && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                El crédito exige un cliente seleccionado.
               </div>
             )}
 

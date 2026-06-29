@@ -55,7 +55,7 @@ export default async function BranchPosPage({
         .limit(200),
       supabase
         .from("customers")
-        .select("id, name, phone, email")
+        .select("id, name, phone, email, credit_limit")
         .order("name")
         .limit(200),
       supabase
@@ -122,6 +122,7 @@ export default async function BranchPosPage({
       name: customer.name,
       phone: customer.phone,
       email: customer.email,
+      creditLimit: customer.credit_limit ? Number(customer.credit_limit) : null,
       outstandingAmount: outstandingByCustomer.get(customer.id) ?? 0,
     }));
 

@@ -434,9 +434,9 @@ BEGIN
   -- =========================================================================
   -- 10. CUSTOMERS (2) + a preorder + a customer request (demand domain)
   -- =========================================================================
-  INSERT INTO public.customers (company_id, name, slug, tax_id, phone, email, address, is_active)
+  INSERT INTO public.customers (company_id, name, slug, tax_id, phone, email, address, is_active, credit_limit)
   VALUES (v_company_id, 'Juan Pérez', 'juan-perez', 'PEJC800101HDF', '55-1234-0001', 'juan.perez@example.com',
-          'Calle Olivos 12, CDMX', TRUE)
+          'Calle Olivos 12, CDMX', TRUE, 5000.00)
     RETURNING id INTO v_customer1;
 
   INSERT INTO public.customers (company_id, name, slug, tax_id, phone, email, address, is_active)

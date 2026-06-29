@@ -6,7 +6,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap;
 
-SELECT plan(15);
+SELECT plan(18);
 
 -- Seed data
 INSERT INTO public.companies (id, name, slug)
@@ -68,6 +68,17 @@ VALUES (
   'c1c00000-0000-0000-0000-000000000001',
   'RPC Customer A',
   'rpc-customer-a',
+  'ac1c0000-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+);
+
+-- Customer B with a credit limit for limit validation tests
+INSERT INTO public.customers (id, company_id, name, slug, credit_limit, created_by)
+VALUES (
+  'cc1c0000-0000-0000-0000-000000000002',
+  'c1c00000-0000-0000-0000-000000000001',
+  'RPC Customer B (Limited)',
+  'rpc-customer-b-limited',
+  1000.00,
   'ac1c0000-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
 );
 
@@ -467,7 +478,73 @@ SELECT results_eq(
   'create_sale_transaction: credit payment with real customer succeeds'
 );
 
--- 14. Verify cancelled sale status
+-- 14. Credit limit: customer with NULL credit_limit (unlimited) succeeds
+SELECT results_eq(
+  $$ SELECT public.create_sale_transaction(jsonb_build_object(
+    'company_id', 'c1c00000-0000-0000-0000-000000000001',
+    'branch_id', 'b1c00000-1111-1111-1111-111111111111',
+    'actor_user_id', 'ac1c0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'customer_id', 'cc1c0000-0000-0000-0000-000000000001',
+    'items', jsonb_build_array(jsonb_build_object(
+      'variant_id', '0b1c0000-0000-0000-0000-000000000001',
+      'quantity', 1000,
+      'unit_price', 100.00,
+      'line_total', 100000.00
+    )),
+    'payments', jsonb_build_array(jsonb_build_object(
+      'payment_method', 'credit',
+      'amount', 100000.00
+    ))
+  ))->>'success' $$,
+  ARRAY['true'::text],
+  'create_sale_transaction: credit with unlimited customer (NULL credit_limit) succeeds'
+);
+
+-- 15. Credit limit: customer within limit succeeds
+SELECT results_eq(
+  $$ SELECT public.create_sale_transaction(jsonb_build_object(
+    'company_id', 'c1c00000-0000-0000-0000-000000000001',
+    'branch_id', 'b1c00000-1111-1111-1111-111111111111',
+    'actor_user_id', 'ac1c0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'customer_id', 'cc1c0000-0000-0000-0000-000000000002',
+    'items', jsonb_build_array(jsonb_build_object(
+      'variant_id', '0b1c0000-0000-0000-0000-000000000001',
+      'quantity', 1,
+      'unit_price', 50.00,
+      'line_total', 50.00
+    )),
+    'payments', jsonb_build_array(jsonb_build_object(
+      'payment_method', 'credit',
+      'amount', 50.00
+    ))
+  ))->>'success' $$,
+  ARRAY['true'::text],
+  'create_sale_transaction: credit within limit succeeds'
+);
+
+-- 16. Credit limit: customer exceeding limit fails
+SELECT results_eq(
+  $$ SELECT public.create_sale_transaction(jsonb_build_object(
+    'company_id', 'c1c00000-0000-0000-0000-000000000001',
+    'branch_id', 'b1c00000-1111-1111-1111-111111111111',
+    'actor_user_id', 'ac1c0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'customer_id', 'cc1c0000-0000-0000-0000-000000000002',
+    'items', jsonb_build_array(jsonb_build_object(
+      'variant_id', '0b1c0000-0000-0000-0000-000000000001',
+      'quantity', 1,
+      'unit_price', 9999.00,
+      'line_total', 9999.00
+    )),
+    'payments', jsonb_build_array(jsonb_build_object(
+      'payment_method', 'credit',
+      'amount', 9999.00
+    ))
+  ))->>'success' $$,
+  ARRAY['false'::text],
+  'create_sale_transaction: credit exceeding limit fails'
+);
+
+-- 17. Verify cancelled sale status
 SELECT is(
   status, 'cancelled',
   'RPC: cancelled sale has correct status'
