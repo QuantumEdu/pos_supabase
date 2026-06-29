@@ -20,5 +20,5 @@ export function handleRecordWaste(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleRecordWaste);
+  Deno.serve((req: Request) => handleRecordWaste(req));
 }

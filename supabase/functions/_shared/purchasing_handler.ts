@@ -17,11 +17,16 @@ type RpcError = {
   message: string;
 };
 
+type RpcResult = {
+  data: unknown;
+  error: RpcError | null;
+};
+
 type RpcClient = {
   rpc(
     rpcName: string,
-    args: { p: Record<string, unknown> },
-  ): Promise<{ data: unknown; error: RpcError | null }>;
+    args: { p: Record<string, any> },
+  ): PromiseLike<RpcResult>;
 };
 
 export type PurchasingHandlerDeps = {

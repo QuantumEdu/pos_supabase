@@ -9,5 +9,5 @@ import type { ReturnHandlerDeps } from "../_shared/return_handler.ts";
 export { handleReturnSaleItem };
 
 if (import.meta.main) {
-  Deno.serve(handleReturnSaleItem);
+  Deno.serve((req: Request) => handleReturnSaleItem(req));
 }

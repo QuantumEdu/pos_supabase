@@ -24,5 +24,5 @@ export function handleManageSupplier(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleManageSupplier);
+  Deno.serve((req: Request) => handleManageSupplier(req));
 }

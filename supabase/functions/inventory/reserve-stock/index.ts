@@ -19,5 +19,5 @@ export function handleReserveStock(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleReserveStock);
+  Deno.serve((req: Request) => handleReserveStock(req));
 }

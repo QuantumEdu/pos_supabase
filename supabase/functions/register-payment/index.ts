@@ -9,5 +9,5 @@ import type { CreditPaymentHandlerDeps } from "../_shared/credit_payment_handler
 export { handleRegisterCustomerPayment };
 
 if (import.meta.main) {
-  Deno.serve(handleRegisterCustomerPayment);
+  Deno.serve((req: Request) => handleRegisterCustomerPayment(req));
 }

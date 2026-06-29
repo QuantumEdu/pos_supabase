@@ -20,5 +20,5 @@ export function handleAdjustStock(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleAdjustStock);
+  Deno.serve((req: Request) => handleAdjustStock(req));
 }

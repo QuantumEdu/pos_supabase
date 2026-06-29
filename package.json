@@ -10,6 +10,7 @@
     "db:reset": "supabase db reset"
   },
   "devDependencies": {
+    "@types/node": "^20.19.43",
     "supabase": "^2.23.0"
   }
 }

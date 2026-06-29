@@ -20,5 +20,5 @@ export function handleCreateSale(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleCreateSale);
+  Deno.serve((req: Request) => handleCreateSale(req));
 }

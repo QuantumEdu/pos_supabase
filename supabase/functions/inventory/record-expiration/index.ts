@@ -20,5 +20,5 @@ export function handleRecordExpiration(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleRecordExpiration);
+  Deno.serve((req: Request) => handleRecordExpiration(req));
 }

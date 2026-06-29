@@ -20,5 +20,5 @@ export function handleRecordSaleReturn(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleRecordSaleReturn);
+  Deno.serve((req: Request) => handleRecordSaleReturn(req));
 }

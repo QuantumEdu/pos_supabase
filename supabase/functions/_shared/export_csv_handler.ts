@@ -30,8 +30,8 @@ export type ExportCsvRequest = {
 type RpcClient = {
   rpc(
     fnName: string,
-    args: Record<string, unknown>,
-  ): Promise<{ data: unknown; error: { code?: string; message: string } | null }>;
+    args: Record<string, any>,
+  ): PromiseLike<{ data: unknown; error: { code?: string; message: string } | null }>;
 };
 
 export type ExportCsvHandlerDeps = {

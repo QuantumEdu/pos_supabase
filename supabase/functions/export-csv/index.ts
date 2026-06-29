@@ -8,5 +8,5 @@ import { handleExportCsv } from "../_shared/export_csv_handler.ts";
 export { handleExportCsv };
 
 if (import.meta.main) {
-  Deno.serve(handleExportCsv);
+  Deno.serve((req: Request) => handleExportCsv(req));
 }

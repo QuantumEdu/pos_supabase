@@ -24,5 +24,5 @@ export function handleCancelPurchaseOrder(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleCancelPurchaseOrder);
+  Deno.serve((req: Request) => handleCancelPurchaseOrder(req));
 }

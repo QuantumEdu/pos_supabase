@@ -22,5 +22,5 @@ export function handleForceCloseCashSession(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleForceCloseCashSession);
+  Deno.serve((req: Request) => handleForceCloseCashSession(req));
 }

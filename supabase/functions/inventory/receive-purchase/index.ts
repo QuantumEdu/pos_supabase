@@ -20,5 +20,5 @@ export function handleReceivePurchase(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleReceivePurchase);
+  Deno.serve((req: Request) => handleReceivePurchase(req));
 }

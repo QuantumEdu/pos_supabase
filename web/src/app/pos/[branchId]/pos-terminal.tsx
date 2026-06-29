@@ -255,6 +255,10 @@ export function PosTerminal({
     );
   });
 
+  const roleHint = isAdmin
+    ? "Administrador: podés registrar abonos y devoluciones."
+    : "Cajero: venta, caja y cancelación propia habilitadas. Abonos y devoluciones requieren administrador.";
+
   const subtotal = cart.reduce(
     (acc, item) => acc + item.unitPrice * item.quantity,
     0,
@@ -689,6 +693,7 @@ export function PosTerminal({
             <p className="mt-1 text-sm text-zinc-500">
               Buscá variantes, armá el carrito y registrá la venta por Edge Function.
             </p>
+            <p className="mt-2 text-sm text-zinc-400">{roleHint}</p>
           </div>
           <label className="block md:w-72">
             <span className="mb-1 block text-sm font-medium text-zinc-700">Buscar</span>

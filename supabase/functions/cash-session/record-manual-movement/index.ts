@@ -22,5 +22,5 @@ export function handleRecordManualMovement(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleRecordManualMovement);
+  Deno.serve((req: Request) => handleRecordManualMovement(req));
 }

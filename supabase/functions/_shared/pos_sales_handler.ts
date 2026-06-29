@@ -28,11 +28,16 @@ function isRpcEnvelope(value: unknown): value is RpcEnvelopeSuccess<unknown> | R
   return typeof value === "object" && value !== null && "success" in value;
 }
 
+type RpcResult = {
+  data: unknown;
+  error: RpcError | null;
+};
+
 type RpcClient = {
   rpc(
     rpcName: string,
-    args: { p: Record<string, unknown> },
-  ): Promise<{ data: unknown; error: RpcError | null }>;
+    args: { p: Record<string, any> },
+  ): PromiseLike<RpcResult>;
 };
 
 export type PosSalesHandlerDeps = {

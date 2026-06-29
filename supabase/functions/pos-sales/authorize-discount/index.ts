@@ -20,5 +20,5 @@ export function handleAuthorizeDiscount(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleAuthorizeDiscount);
+  Deno.serve((req: Request) => handleAuthorizeDiscount(req));
 }

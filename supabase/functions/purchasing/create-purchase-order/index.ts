@@ -23,5 +23,5 @@ export function handleCreatePurchaseOrder(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleCreatePurchaseOrder);
+  Deno.serve((req: Request) => handleCreatePurchaseOrder(req));
 }

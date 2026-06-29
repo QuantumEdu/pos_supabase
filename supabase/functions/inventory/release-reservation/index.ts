@@ -19,5 +19,5 @@ export function handleReleaseReservation(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleReleaseReservation);
+  Deno.serve((req: Request) => handleReleaseReservation(req));
 }

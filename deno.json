@@ -1,6 +1,8 @@
 {
+  "nodeModulesDir": "auto",
   "compilerOptions": {
-    "lib": ["deno.ns", "ESNext"]
+    "lib": ["deno.ns", "deno.window", "ESNext"],
+    "types": ["./supabase/functions/_test/type-overrides.d.ts"]
   },
   "tasks": {
     "test": "deno test supabase/functions/_test/",

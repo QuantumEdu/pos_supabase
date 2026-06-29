@@ -20,5 +20,5 @@ export function handleRecordSaleDeduction(
 }
 
 if (import.meta.main) {
-  Deno.serve(handleRecordSaleDeduction);
+  Deno.serve((req: Request) => handleRecordSaleDeduction(req));
 }
