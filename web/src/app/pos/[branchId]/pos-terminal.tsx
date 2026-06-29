@@ -6,7 +6,7 @@ import {
   FunctionsHttpError,
   FunctionsRelayError,
 } from "@supabase/supabase-js";
-import { startTransition, useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type BranchSession = {
@@ -685,6 +685,50 @@ export function PosTerminal({
     setSelectedBalanceId("");
   }
 
+  // ── Keyboard shortcuts ──────────────────────────────────────────────
+  const searchRef = useRef<HTMLInputElement>(null);
+  const submitSaleRef = useRef(submitSale);
+
+  // Keep the ref up-to-date with the latest submitSale
+  submitSaleRef.current = submitSale;
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      // Ctrl+K or / (when not in an input) → focus search
+      if ((event.ctrlKey && event.key === "k") || (!event.ctrlKey && !event.metaKey && event.key === "/" && !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement))) {
+        event.preventDefault();
+        searchRef.current?.focus();
+        return;
+      }
+
+      // Escape → clear search, then clear error/success
+      if (event.key === "Escape") {
+        if (searchRef.current === document.activeElement && search) {
+          setSearch("");
+          return;
+        }
+        setError(null);
+        setSuccess(null);
+        return;
+      }
+
+      // Ctrl+Enter → submit sale
+      if (event.ctrlKey && event.key === "Enter" && cart.length > 0 && !submittingSale) {
+        event.preventDefault();
+        submitSaleRef.current();
+        return;
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [search, cart, submittingSale]);
+
+  // Auto-focus search on mount
+  useEffect(() => {
+    searchRef.current?.focus();
+  }, []);
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <section className="rounded-2xl border bg-white p-6">
@@ -697,8 +741,11 @@ export function PosTerminal({
             <p className="mt-2 text-sm text-zinc-400">{roleHint}</p>
           </div>
           <label className="block md:w-72">
-            <span className="mb-1 block text-sm font-medium text-zinc-700">Buscar</span>
+            <span className="mb-1 block text-sm font-medium text-zinc-700">
+              Buscar <kbd className="ml-1 rounded border border-zinc-300 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400">/</kbd>
+            </span>
             <input
+              ref={searchRef}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="SKU, producto o variante"
@@ -1345,6 +1392,15 @@ export function PosTerminal({
             >
               {submittingSale ? "Registrando venta..." : "Registrar venta"}
             </button>
+
+            <div className="mt-3 flex flex-wrap gap-2 text-[10px] text-zinc-400">
+              <kbd className="rounded border border-zinc-200 px-1.5 py-0.5 font-medium">/</kbd>
+              <span>Buscar</span>
+              <kbd className="rounded border border-zinc-200 px-1.5 py-0.5 font-medium">Esc</kbd>
+              <span>Limpiar</span>
+              <kbd className="rounded border border-zinc-200 px-1.5 py-0.5 font-medium">Ctrl+Enter</kbd>
+              <span>Cobrar</span>
+            </div>
           </div>
         </div>
       </section>
