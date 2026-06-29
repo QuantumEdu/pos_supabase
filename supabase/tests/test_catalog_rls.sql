@@ -663,21 +663,24 @@ RESET ROLE;
 SET ROLE service_role;
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.brands $$,
+  $$ SELECT count(*)::bigint FROM public.brands
+     WHERE company_id IN ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222') $$,
   ARRAY[3::bigint],
-  'RLS brands: service_role can see all rows (3 brands)'
+  'RLS brands: service_role can see all fixture rows (3 brands)'
 );
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.categories $$,
+  $$ SELECT count(*)::bigint FROM public.categories
+     WHERE company_id IN ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222') $$,
   ARRAY[2::bigint],
-  'RLS categories: service_role can see all rows (2 categories)'
+  'RLS categories: service_role can see all fixture rows (2 categories)'
 );
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.units $$,
+  $$ SELECT count(*)::bigint FROM public.units
+     WHERE company_id IN ('00000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111') $$,
   ARRAY[9::bigint],
-  'RLS units: service_role can see all rows (8 global + 1 Company A)'
+  'RLS units: service_role can see all fixture rows (8 global + 1 Company A)'
 );
 
 RESET ROLE;

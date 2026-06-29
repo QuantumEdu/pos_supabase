@@ -19,7 +19,6 @@ export default async function BranchPosPage({
     { data: variants },
     { data: prices },
     { data: customers },
-    { data: companyUsers },
     { data: outstandingBalances },
     { data: creditBalances },
     { data: recentSales },
@@ -59,7 +58,6 @@ export default async function BranchPosPage({
         .select("id, name, phone, email")
         .order("name")
         .limit(200),
-      supabase.from("company_users").select("user_id").limit(500),
       supabase
         .from("v_dashboard_outstanding_balances")
         .select("customer_id, remaining_amount"),
@@ -77,14 +75,14 @@ export default async function BranchPosPage({
         .eq("branch_id", branchId)
         .eq("status", "active")
         .order("created_at", { ascending: false })
-        .limit(20),
+        .limit(100),
       supabase
         .from("sale_items")
         .select(
           "id, sale_id, variant_id, quantity, unit_price, sale:sales!inner(branch_id, status, sale_number, created_at), variant:product_variants(name, product:products(name)), batches:sale_item_batches(id, quantity)",
         )
         .order("created_at", { ascending: false })
-        .limit(200),
+        .limit(300),
     ]);
 
   if (!branch) {
@@ -112,7 +110,6 @@ export default async function BranchPosPage({
     .sort((a, b) => b.stock - a.stock || a.name.localeCompare(b.name))
     .slice(0, 12);
 
-  const companyUserIds = new Set((companyUsers ?? []).map((item) => item.user_id));
   const outstandingByCustomer = new Map(
     (outstandingBalances ?? []).map((item) => [
       item.customer_id,
@@ -120,9 +117,7 @@ export default async function BranchPosPage({
     ]),
   );
 
-  const supportedCustomers = (customers ?? [])
-    .filter((customer) => companyUserIds.has(customer.id))
-    .map((customer) => ({
+  const supportedCustomers = (customers ?? []).map((customer) => ({
       id: customer.id,
       name: customer.name,
       phone: customer.phone,
@@ -216,7 +211,7 @@ export default async function BranchPosPage({
         ),
       };
     })
-    .slice(0, 30);
+    .slice(0, 120);
 
   return (
     <AppShell

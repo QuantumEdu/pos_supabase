@@ -187,15 +187,17 @@ SELECT _reset_cash_session_rls_context();
 SET ROLE service_role;
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.cash_sessions $$,
+  $$ SELECT count(*)::bigint FROM public.cash_sessions
+     WHERE company_id IN ('d1000000-0000-0000-0000-000000000001', 'd2000000-0000-0000-0000-000000000002') $$,
   ARRAY[3::bigint],
-  'cash_sessions RLS: service_role bypass sees all rows'
+  'cash_sessions RLS: service_role bypass sees all fixture rows'
 );
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.cash_movements $$,
+  $$ SELECT count(*)::bigint FROM public.cash_movements
+     WHERE company_id IN ('d1000000-0000-0000-0000-000000000001', 'd2000000-0000-0000-0000-000000000002') $$,
   ARRAY[3::bigint],
-  'cash_movements RLS: service_role bypass sees all rows'
+  'cash_movements RLS: service_role bypass sees all fixture rows'
 );
 
 RESET ROLE;

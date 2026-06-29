@@ -17,9 +17,8 @@ SELECT plan(22);
 -- ============================================================================
 -- Seed data
 -- Companies, branch, users, a cash session, customers, and sales.
--- sales.customer_id (composite FK→company_users) AND customer_balances.
--- customer_id (composite FK→customers) must both resolve to the SAME UUID,
--- so we make one UUID exist as both a customer and a company_user.
+-- sales.customer_id and customer_balances.customer_id now both resolve to
+-- public.customers(company_id, id), so the fixture uses a normal customer row.
 -- ============================================================================
 INSERT INTO public.companies (id, name, slug)
 VALUES ('c1d00000-0000-0000-0000-000000000001', 'Credit RPC Co A', 'credit-rpc-co-a');
@@ -35,10 +34,6 @@ VALUES
   ('ad1d0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'crpc-cashier-a@test.com',
    '{"company_id": "c1d00000-0000-0000-0000-000000000001", "role": "cashier"}',
    '{"full_name": "CRPC Cashier A"}'),
-  -- The "customer" UUID that exists as BOTH a customer and a company_user.
-  -- company_users.role CHECK allows only ('admin','cashier'); we use 'cashier'
-  -- so sales.customer_id (composite FK→company_users) resolves to the same UUID
-  -- that also exists in public.customers (composite FK→customers).
   ('0cd10000-0000-0000-0000-000000000001', 'crpc-customer-one@test.com',
    '{"company_id": "c1d00000-0000-0000-0000-000000000001", "role": "cashier"}',
    '{"full_name": "CRPC Customer One"}')
@@ -54,15 +49,14 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.company_users (user_id, company_id, role)
 VALUES
   ('ad1d0000-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'c1d00000-0000-0000-0000-000000000001', 'admin'),
-  ('ad1d0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'c1d00000-0000-0000-0000-000000000001', 'cashier'),
-  ('0cd10000-0000-0000-0000-000000000001', 'c1d00000-0000-0000-0000-000000000001', 'cashier')
+  ('ad1d0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'c1d00000-0000-0000-0000-000000000001', 'cashier')
 ON CONFLICT (user_id, company_id) DO NOTHING;
 
 INSERT INTO public.branch_users (user_id, branch_id, company_id)
 VALUES ('ad1d0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'b1d00000-1111-1111-1111-111111111111', 'c1d00000-0000-0000-0000-000000000001')
 ON CONFLICT (user_id, branch_id) DO NOTHING;
 
--- A customer whose id is the same UUID as the company_user above
+-- Normal customer referenced by the credit-sale fixture
 INSERT INTO public.customers (id, company_id, name, slug, created_by)
 VALUES (
   '0cd10000-0000-0000-0000-000000000001',
@@ -84,7 +78,7 @@ INSERT INTO public.cash_sessions (
   'ad1d0000-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
 );
 
--- Sales used across scenarios (each with customer_id = the dual customer/company_user)
+-- Sales used across scenarios (each with customer_id = the normal customer)
 INSERT INTO public.sales (
   id, company_id, branch_id, cashier_user_id, customer_id, cash_session_id, status,
   subtotal, total, sale_number, created_by, updated_by

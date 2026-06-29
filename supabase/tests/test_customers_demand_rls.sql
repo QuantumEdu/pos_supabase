@@ -569,30 +569,34 @@ SET ROLE service_role;
 
 -- 43. customers
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.customers $$,
+  $$ SELECT count(*)::bigint FROM public.customers
+     WHERE company_id IN ('dddd1111-1111-1111-1111-111111111111', 'eeee2222-2222-2222-2222-222222222222') $$,
   ARRAY[4::bigint],
-  'RLS customers: service_role sees all rows (2 Company A + 1 Company B + 1 inserted)'
+  'RLS customers: service_role sees all fixture rows (2 Company A + 1 Company B + 1 inserted)'
 );
 
 -- 44. customer_requests
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.customer_requests $$,
+  $$ SELECT count(*)::bigint FROM public.customer_requests
+     WHERE company_id IN ('dddd1111-1111-1111-1111-111111111111', 'eeee2222-2222-2222-2222-222222222222') $$,
   ARRAY[4::bigint],
-  'RLS customer_requests: service_role sees all rows (2 Company A + 1 Company B + 1 inserted)'
+  'RLS customer_requests: service_role sees all fixture rows (2 Company A + 1 Company B + 1 inserted)'
 );
 
 -- 45. preorders
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.preorders $$,
+  $$ SELECT count(*)::bigint FROM public.preorders
+     WHERE company_id IN ('dddd1111-1111-1111-1111-111111111111', 'eeee2222-2222-2222-2222-222222222222') $$,
   ARRAY[4::bigint],
-  'RLS preorders: service_role sees all rows (2 Company A + 1 Company B + 1 inserted)'
+  'RLS preorders: service_role sees all fixture rows (2 Company A + 1 Company B + 1 inserted)'
 );
 
 -- 46. preorder_items
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.preorder_items $$,
+  $$ SELECT count(*)::bigint FROM public.preorder_items
+     WHERE company_id IN ('dddd1111-1111-1111-1111-111111111111', 'eeee2222-2222-2222-2222-222222222222') $$,
   ARRAY[4::bigint],
-  'RLS preorder_items: service_role sees all rows (2 Company A + 1 Company B + 1 inserted)'
+  'RLS preorder_items: service_role sees all fixture rows (2 Company A + 1 Company B + 1 inserted)'
 );
 
 RESET ROLE;

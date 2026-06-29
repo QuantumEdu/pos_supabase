@@ -610,33 +610,38 @@ RESET ROLE;
 SET ROLE service_role;
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.suppliers $$,
+  $$ SELECT count(*)::bigint FROM public.suppliers
+     WHERE company_id IN ('aaaa1111-1111-1111-1111-111111111111', 'bbbb2222-2222-2222-2222-222222222222') $$,
   ARRAY[4::bigint],
-  'RLS suppliers: service_role sees all rows (3 Company A + 1 Company B)'
+  'RLS suppliers: service_role sees all fixture rows (3 Company A + 1 Company B)'
 );
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.purchase_orders $$,
+  $$ SELECT count(*)::bigint FROM public.purchase_orders
+     WHERE company_id IN ('aaaa1111-1111-1111-1111-111111111111', 'bbbb2222-2222-2222-2222-222222222222') $$,
   ARRAY[4::bigint],
-  'RLS purchase_orders: service_role sees all rows (3 Company A + 1 Company B)'
+  'RLS purchase_orders: service_role sees all fixture rows (3 Company A + 1 Company B)'
 );
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.purchase_order_items $$,
+  $$ SELECT count(*)::bigint FROM public.purchase_order_items
+     WHERE company_id IN ('aaaa1111-1111-1111-1111-111111111111', 'bbbb2222-2222-2222-2222-222222222222') $$,
   ARRAY[4::bigint],
-  'RLS purchase_order_items: service_role sees all rows (3 Company A + 1 Company B)'
+  'RLS purchase_order_items: service_role sees all fixture rows (3 Company A + 1 Company B)'
 );
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.purchase_receipts $$,
+  $$ SELECT count(*)::bigint FROM public.purchase_receipts
+     WHERE company_id IN ('aaaa1111-1111-1111-1111-111111111111', 'bbbb2222-2222-2222-2222-222222222222') $$,
   ARRAY[3::bigint],
-  'RLS purchase_receipts: service_role sees all rows (2 Company A + 1 Company B)'
+  'RLS purchase_receipts: service_role sees all fixture rows (2 Company A + 1 Company B)'
 );
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.purchase_receipt_items $$,
+  $$ SELECT count(*)::bigint FROM public.purchase_receipt_items
+     WHERE company_id IN ('aaaa1111-1111-1111-1111-111111111111', 'bbbb2222-2222-2222-2222-222222222222') $$,
   ARRAY[3::bigint],
-  'RLS purchase_receipt_items: service_role sees all rows (2 Company A + 1 Company B)'
+  'RLS purchase_receipt_items: service_role sees all fixture rows (2 Company A + 1 Company B)'
 );
 
 -- service_role can INSERT any row

@@ -272,15 +272,17 @@ SELECT _reset_inventory_rls_context();
 SET ROLE service_role;
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.stock_lots $$,
+  $$ SELECT count(*)::bigint FROM public.stock_lots
+     WHERE company_id IN ('77777777-7777-7777-7777-777777777777', '88888888-8888-8888-8888-888888888888') $$,
   ARRAY[3::bigint],
-  'RLS stock_lots: service_role bypass sees all rows'
+  'RLS stock_lots: service_role bypass sees all fixture rows'
 );
 
 SELECT results_eq(
-  $$ SELECT count(*)::bigint FROM public.stock_movements $$,
+  $$ SELECT count(*)::bigint FROM public.stock_movements
+     WHERE company_id IN ('77777777-7777-7777-7777-777777777777', '88888888-8888-8888-8888-888888888888') $$,
   ARRAY[3::bigint],
-  'RLS stock_movements: service_role bypass sees all rows'
+  'RLS stock_movements: service_role bypass sees all fixture rows'
 );
 
 SELECT lives_ok(

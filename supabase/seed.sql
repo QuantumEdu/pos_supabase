@@ -11,10 +11,9 @@
 -- Notes:
 --   * A single DO block carries DECLARE variables for every UUID so they can be
 --     referenced across inserts (psql \set variables do not survive DO blocks).
---   * `sales.customer_id` has a composite FK to company_users(company_id, user_id)
---     (schema quirk), NOT to public.customers. The cashier sale therefore uses
---     customer_id = NULL; the two pharmacy customers live in public.customers
---     for the customers-demand domain and dashboard views only.
+--   * `sales.customer_id` has a composite FK to public.customers(company_id, id).
+--     Seeded cashier sales still use customer_id = NULL, but the two pharmacy
+--     customers are now attachable directly to POS sales and credit balances.
 --   * A `purchase_receipt` stock_movement is created for every lot so that
 --     reconcile_inventory reports NO drift (SUM(movements) == remaining_qty).
 --   * Insert order follows FK dependencies strictly.
@@ -100,7 +99,7 @@ BEGIN
   -- =========================================================================
   INSERT INTO auth.users (
     id, instance_id, aud, role, email, encrypted_password,
-    email_confirmed_at, confirmed_at,
+    email_confirmed_at,
     raw_app_meta_data, raw_user_meta_data,
     created_at, updated_at
   )
@@ -109,7 +108,7 @@ BEGIN
     'authenticated', 'authenticated',
     'admin@farmacia.com',
     crypt('admin123', gen_salt('bf')),
-    now(), now(),
+    now(),
     jsonb_build_object('company_id', v_company_id, 'role', 'admin'),
     jsonb_build_object('full_name', 'Administrador Farmacia Salud'),
     now(), now()
@@ -118,7 +117,7 @@ BEGIN
 
   INSERT INTO auth.users (
     id, instance_id, aud, role, email, encrypted_password,
-    email_confirmed_at, confirmed_at,
+    email_confirmed_at,
     raw_app_meta_data, raw_user_meta_data,
     created_at, updated_at
   )
@@ -127,7 +126,7 @@ BEGIN
     'authenticated', 'authenticated',
     'cashier@farmacia.com',
     crypt('cashier123', gen_salt('bf')),
-    now(), now(),
+    now(),
     jsonb_build_object('company_id', v_company_id, 'role', 'cashier'),
     jsonb_build_object('full_name', 'Cajero Sucursal Centro'),
     now(), now()

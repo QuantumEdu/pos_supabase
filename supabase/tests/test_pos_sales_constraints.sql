@@ -6,7 +6,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap;
 
-SELECT plan(17);
+SELECT plan(19);
 
 -- Seed data
 INSERT INTO public.companies (id, name, slug)
@@ -45,6 +45,11 @@ VALUES
   ('ac1a0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'c1a00000-0000-0000-0000-000000000001', 'cashier'),
   ('ac2a0000-cccc-cccc-cccc-cccccccccccc', 'c2a00000-0000-0000-0000-000000000002', 'cashier')
 ON CONFLICT (user_id, company_id) DO NOTHING;
+
+INSERT INTO public.customers (id, company_id, name, slug, created_by)
+VALUES
+  ('ca1a0000-0000-0000-0000-000000000001', 'c1a00000-0000-0000-0000-000000000001', 'Sales Customer A', 'sales-customer-a', 'aa1a0000-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  ('ca2a0000-0000-0000-0000-000000000002', 'c2a00000-0000-0000-0000-000000000002', 'Sales Customer B', 'sales-customer-b', 'ac2a0000-cccc-cccc-cccc-cccccccccccc');
 
 -- Open a cash session for cashier A in branch A1
 INSERT INTO public.cash_sessions (
@@ -93,7 +98,7 @@ SELECT lives_ok(
 -- ============================================================================
 SELECT throws_ok(
   $$ INSERT INTO public.sales (
-       company_id, branch_id, cashier_user_id, cash_session_id, status,
+        company_id, branch_id, cashier_user_id, cash_session_id, status,
        subtotal, total, sale_number
      ) VALUES (
        'c1a00000-0000-0000-0000-000000000001',
@@ -140,6 +145,43 @@ SELECT throws_ok(
      ) $$,
   NULL, NULL,
   'sales: cash_session composite FK rejects cross-company session'
+);
+
+-- ============================================================================
+-- Composite FK: customer must belong to same company customers table
+-- ============================================================================
+SELECT lives_ok(
+  $$ INSERT INTO public.sales (
+       id, company_id, branch_id, cashier_user_id, customer_id, cash_session_id, status,
+       subtotal, total, sale_number, created_by, updated_by
+     ) VALUES (
+       '1a1a0000-0000-0000-0000-000000000099',
+       'c1a00000-0000-0000-0000-000000000001',
+       'b1a00000-1111-1111-1111-111111111111',
+       'ac1a0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+       'ca1a0000-0000-0000-0000-000000000001',
+       '0c1a0000-0000-0000-0000-000000000001',
+       'active', 50.00, 50.00, 1099,
+       'aa1a0000-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+       'aa1a0000-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+     ) $$,
+  'sales: customer composite FK accepts same-company customer'
+);
+
+SELECT throws_ok(
+  $$ INSERT INTO public.sales (
+       company_id, branch_id, cashier_user_id, customer_id, cash_session_id, status,
+       subtotal, total, sale_number
+     ) VALUES (
+       'c1a00000-0000-0000-0000-000000000001',
+       'b1a00000-1111-1111-1111-111111111111',
+       'ac1a0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+       'ca2a0000-0000-0000-0000-000000000002',
+       '0c1a0000-0000-0000-0000-000000000001',
+       'active', 50.00, 50.00, 1100
+     ) $$,
+  NULL, NULL,
+  'sales: customer composite FK rejects cross-company customer'
 );
 
 -- ============================================================================

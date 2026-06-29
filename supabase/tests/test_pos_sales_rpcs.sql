@@ -6,7 +6,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap;
 
-SELECT plan(14);
+SELECT plan(15);
 
 -- Seed data
 INSERT INTO public.companies (id, name, slug)
@@ -61,6 +61,15 @@ VALUES
   ('ac1c0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'b1c00000-1111-1111-1111-111111111111', 'c1c00000-0000-0000-0000-000000000001'),
   ('ac2c0000-dddd-dddd-dddd-dddddddddddd', 'b2c00000-2222-2222-2222-222222222222', 'c2c00000-0000-0000-0000-000000000002')
 ON CONFLICT (user_id, branch_id) DO NOTHING;
+
+INSERT INTO public.customers (id, company_id, name, slug, created_by)
+VALUES (
+  'cc1c0000-0000-0000-0000-000000000001',
+  'c1c00000-0000-0000-0000-000000000001',
+  'RPC Customer A',
+  'rpc-customer-a',
+  'ac1c0000-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+);
 
 -- Seed product so product_variants FK works
 INSERT INTO public.products (id, company_id, name, slug, created_by)
@@ -435,6 +444,27 @@ SELECT results_eq(
   ))->>'success' $$,
   ARRAY['false'::text],
   'create_sale_transaction: credit payment without customer fails'
+);
+
+SELECT results_eq(
+  $$ SELECT public.create_sale_transaction(jsonb_build_object(
+    'company_id', 'c1c00000-0000-0000-0000-000000000001',
+    'branch_id', 'b1c00000-1111-1111-1111-111111111111',
+    'actor_user_id', 'ac1c0000-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'customer_id', 'cc1c0000-0000-0000-0000-000000000001',
+    'items', jsonb_build_array(jsonb_build_object(
+      'variant_id', '0b1c0000-0000-0000-0000-000000000001',
+      'quantity', 1,
+      'unit_price', 50.00,
+      'line_total', 50.00
+    )),
+    'payments', jsonb_build_array(jsonb_build_object(
+      'payment_method', 'credit',
+      'amount', 50.00
+    ))
+  ))->>'success' $$,
+  ARRAY['true'::text],
+  'create_sale_transaction: credit payment with real customer succeeds'
 );
 
 -- 14. Verify cancelled sale status

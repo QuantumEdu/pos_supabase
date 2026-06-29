@@ -175,7 +175,9 @@ export function PosTerminal({
   const supabase = createClient();
 
   const [search, setSearch] = useState("");
+  const [historySearch, setHistorySearch] = useState("");
   const deferredSearch = useDeferredValue(search);
+  const deferredHistorySearch = useDeferredValue(historySearch);
   const [openingAmount, setOpeningAmount] = useState("100");
   const [paymentMethod, setPaymentMethod] = useState<(typeof paymentMethods)[number]["value"]>("cash");
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -225,6 +227,31 @@ export function PosTerminal({
       variant.name.toLowerCase().includes(term) ||
       variant.productName.toLowerCase().includes(term) ||
       variant.sku?.toLowerCase().includes(term)
+    );
+  });
+
+  const filteredSales = sales.filter((sale) => {
+    const term = deferredHistorySearch.trim().toLowerCase();
+    if (!term) return true;
+
+    return (
+      String(sale.saleNumber).includes(term) ||
+      (sale.customerName ?? "").toLowerCase().includes(term) ||
+      new Date(sale.createdAt).toLocaleString("es-MX").toLowerCase().includes(term)
+    );
+  });
+
+  const filteredReturnableItems = returnableItems.filter((item) => {
+    const term = deferredHistorySearch.trim().toLowerCase();
+    if (!term) return true;
+
+    return (
+      String(item.saleNumber ?? "").includes(term) ||
+      item.productName.toLowerCase().includes(term) ||
+      item.variantName.toLowerCase().includes(term) ||
+      (item.createdAt
+        ? new Date(item.createdAt).toLocaleString("es-MX").toLowerCase().includes(term)
+        : false)
     );
   });
 
@@ -928,7 +955,7 @@ export function PosTerminal({
                   </>
                 ) : customers.length === 0 ? (
                   <p>
-                    No hay clientes compatibles con el modelo actual de ventas a crédito.
+                    No hay clientes registrados para esta empresa.
                   </p>
                 ) : (
                   <p>Podés vender sin cliente, salvo cuando el método de pago sea crédito.</p>
@@ -1062,18 +1089,30 @@ export function PosTerminal({
               <div className="mt-3 space-y-3">
                 <label className="block">
                   <span className="mb-1 block text-sm font-medium text-zinc-700">
+                    Buscar en historial
+                  </span>
+                  <input
+                    value={historySearch}
+                    onChange={(event) => setHistorySearch(event.target.value)}
+                    placeholder="Venta, cliente, producto o fecha"
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-zinc-700">
                     Venta activa reciente
                   </span>
                   <select
                     value={selectedSaleId}
                     onChange={(event) => setSelectedSaleId(event.target.value)}
                     className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                    disabled={sales.length === 0}
+                    disabled={filteredSales.length === 0}
                   >
                     <option value="">Seleccioná una venta</option>
-                    {sales.map((sale) => (
+                    {filteredSales.map((sale) => (
                       <option key={sale.id} value={sale.id}>
-                        Venta #{sale.saleNumber} · {formatCurrency(sale.total)}
+                        Venta #{sale.saleNumber} · {sale.customerName ?? "Público general"} · {formatCurrency(sale.total)}
                       </option>
                     ))}
                   </select>
@@ -1123,18 +1162,18 @@ export function PosTerminal({
                       Línea vendida
                     </span>
                     <select
-                      value={selectedReturnItemId}
-                      onChange={(event) => setSelectedReturnItemId(event.target.value)}
-                      className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
-                      disabled={returnableItems.length === 0}
-                    >
-                      <option value="">Seleccioná una línea</option>
-                      {returnableItems.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          Venta #{item.saleNumber ?? "s/n"} · {item.productName} · qty {item.quantity}
-                        </option>
-                      ))}
-                    </select>
+                    value={selectedReturnItemId}
+                    onChange={(event) => setSelectedReturnItemId(event.target.value)}
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                    disabled={filteredReturnableItems.length === 0}
+                  >
+                    <option value="">Seleccioná una línea</option>
+                    {filteredReturnableItems.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        Venta #{item.saleNumber ?? "s/n"} · {item.productName} · {item.variantName} · qty {item.quantity}
+                      </option>
+                    ))}
+                  </select>
                   </label>
 
                   {selectedReturnItem && (
