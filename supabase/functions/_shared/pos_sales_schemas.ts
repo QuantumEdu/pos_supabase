@@ -22,6 +22,7 @@ export const CreateSaleRequest = z.object({
       variant_id: uuidSchema,
       quantity: z.number().positive("quantity must be greater than zero"),
       unit_price: nonNegativeAmount,
+      line_total: nonNegativeAmount.optional(),
       discount_percent: z.number().default(0),
       discount_amount: z.number().default(0),
       tax_percent: z.number().default(0),

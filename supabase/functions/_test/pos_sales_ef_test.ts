@@ -40,6 +40,7 @@ function saleInput(overrides: Record<string, unknown> = {}): Record<string, unkn
         variant_id: "00000000-0000-0000-0000-000000000007",
         quantity: 2,
         unit_price: 50,
+        line_total: 100,
       },
     ],
     payments: [
@@ -254,21 +255,24 @@ Deno.test("create-sale EF: cashier allowed, correct RPC name, and server-derived
     makeDeps({
       createServiceClient: () => ({
         rpc: (rpcName, args) => {
-          capturedRpcName = rpcName;
-          capturedPayload = args.p;
-          return Promise.resolve({
-            data: {
-              sale_id: SALE_ID,
-              sale_number: 1,
-              status: "completed",
-              subtotal: 100,
-              discount_amount: 0,
-              tax_amount: 0,
-              total: 100,
-              cash_session_id: SESSION_ID,
-            },
-            error: null,
-          });
+            capturedRpcName = rpcName;
+            capturedPayload = args.p;
+            return Promise.resolve({
+              data: {
+                success: true,
+                data: {
+                  sale_id: SALE_ID,
+                  sale_number: 1,
+                  status: "completed",
+                  subtotal: 100,
+                  discount_amount: 0,
+                  tax_amount: 0,
+                  total: 100,
+                  cash_session_id: SESSION_ID,
+                },
+              },
+              error: null,
+            });
         },
       }),
     }),
@@ -280,9 +284,33 @@ Deno.test("create-sale EF: cashier allowed, correct RPC name, and server-derived
   assertEquals(capturedPayload?.company_id, COMPANY_ID);
   assertEquals(capturedPayload?.actor_user_id, CASHIER_ID);
   assertEquals(capturedPayload?.branch_id, BRANCH_ID);
+  assertEquals((capturedPayload?.items as Array<Record<string, unknown>>)[0].line_total, 100);
   assertEquals(body.success, true);
   assertEquals(body.data.sale_id, SALE_ID);
   assertEquals(body.data.cash_session_id, SESSION_ID);
+});
+
+Deno.test("create-sale EF: RPC business failure becomes HTTP 400", async () => {
+  const response = await handleCreateSale(
+    makeRequest("/pos-sales/create-sale", saleInput()),
+    makeDeps({
+      createServiceClient: () => ({
+        rpc: () => Promise.resolve({
+          data: {
+            success: false,
+            code: "VALIDATION_ERROR",
+            message: "No open cash session for this cashier in this branch",
+          },
+          error: null,
+        }),
+      }),
+    }),
+  );
+
+  const body = await response.json();
+  assertEquals(response.status, 400);
+  assertEquals(body.success, false);
+  assertEquals(body.error.code, "VALIDATION_ERROR");
 });
 
 Deno.test("create-sale EF: admin allowed to create sale for cashier", async () => {

@@ -1,77 +1,70 @@
-import { createClient } from "@/lib/supabase";
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import { AppShell } from "@/components/app-shell";
+import { requireUser } from "@/lib/auth";
 
 export default async function PosPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user, role } = await requireUser();
 
-  if (!user) redirect("/login");
+  const [{ data: branches }, { data: branchSales }, { data: openSessions }] =
+    await Promise.all([
+      supabase.from("branches").select("id, name, address").order("name"),
+      supabase.from("v_dashboard_sales_by_branch").select("branch_id, today_total"),
+      supabase.from("cash_sessions").select("id, branch_id").eq("status", "open"),
+    ]);
 
-  const { data: branches } = await supabase
-    .from("branches")
-    .select("id, name");
+  const salesByBranch = new Map(
+    (branchSales ?? []).map((entry) => [entry.branch_id, Number(entry.today_total ?? 0)]),
+  );
+  const openSessionsByBranch = new Set((openSessions ?? []).map((entry) => entry.branch_id));
 
   return (
-    <div className="flex min-h-screen bg-zinc-50">
-      <aside className="flex w-64 flex-col border-r bg-white">
-        <div className="border-b px-6 py-4">
-          <h2 className="text-lg font-bold">Farmacia Salud</h2>
-        </div>
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          <a
-            href="/dashboard"
-            className="block rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100"
-          >
-            Dashboard
-          </a>
-          <a
-            href="/products"
-            className="block rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100"
-          >
-            Productos
-          </a>
-          <a
-            href="/pos"
-            className="block rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700"
-          >
-            Punto de Venta
-          </a>
-        </nav>
-      </aside>
+    <AppShell title="Punto de Venta" userEmail={user.email} userRole={role} active="pos">
+      <p className="mb-6 text-zinc-500">
+        Seleccioná una sucursal para continuar con caja, stock y venta rápida.
+      </p>
 
-      <main className="flex-1 overflow-auto">
-        <header className="border-b bg-white px-8 py-4">
-          <h1 className="text-xl font-semibold">Punto de Venta</h1>
-        </header>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        {branches?.map((branch) => {
+          const todayTotal = salesByBranch.get(branch.id) ?? 0;
 
-        <div className="p-8">
-          <p className="mb-6 text-zinc-500">
-            Seleccioná una sucursal para iniciar una venta.
-          </p>
+          return (
+            <Link
+              key={branch.id}
+              href={`/pos/${branch.id}`}
+              className="rounded-xl border bg-white p-6 transition hover:shadow-md"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold">{branch.name}</h3>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    {branch.address ?? "Sucursal activa"}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    openSessionsByBranch.has(branch.id)
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-zinc-100 text-zinc-600"
+                  }`}
+                >
+                  {openSessionsByBranch.has(branch.id) ? "Caja abierta" : "Sin caja abierta"}
+                </span>
+              </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {branches?.map((b) => (
-              <a
-                key={b.id}
-                href={`/pos/${b.id}`}
-                className="rounded-xl border bg-white p-6 transition hover:shadow-md"
-              >
-                <h3 className="text-lg font-semibold">{b.name}</h3>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Iniciar venta en esta sucursal
+              <div className="mt-6">
+                <p className="text-sm text-zinc-500">Ventas de hoy</p>
+                <p className="mt-1 text-2xl font-semibold">
+                  ${todayTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                 </p>
-              </a>
-            ))}
-            {(!branches || branches.length === 0) && (
-              <p className="text-zinc-400">
-                No hay sucursales disponibles
-              </p>
-            )}
-          </div>
-        </div>
-      </main>
-    </div>
+              </div>
+            </Link>
+          );
+        })}
+
+        {(!branches || branches.length === 0) && (
+          <p className="text-zinc-400">No hay sucursales disponibles</p>
+        )}
+      </div>
+    </AppShell>
   );
 }

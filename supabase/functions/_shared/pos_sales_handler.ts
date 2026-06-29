@@ -13,6 +13,21 @@ type RpcError = {
   message: string;
 };
 
+type RpcEnvelopeSuccess<T> = {
+  success: true;
+  data: T;
+};
+
+type RpcEnvelopeFailure = {
+  success: false;
+  code?: string;
+  message?: string;
+};
+
+function isRpcEnvelope(value: unknown): value is RpcEnvelopeSuccess<unknown> | RpcEnvelopeFailure {
+  return typeof value === "object" && value !== null && "success" in value;
+}
+
 type RpcClient = {
   rpc(
     rpcName: string,
@@ -81,6 +96,20 @@ export async function handlePosSalesRpc<T>(
       return Response.json(
         fail(error.code || "RPC_ERROR", error.message),
         { status: 400, headers: corsHeaders },
+      );
+    }
+
+    if (isRpcEnvelope(data)) {
+      if (!data.success) {
+        return Response.json(
+          fail(data.code || "RPC_ERROR", data.message || "Unknown RPC error"),
+          { status: 400, headers: corsHeaders },
+        );
+      }
+
+      return Response.json(
+        { success: true, data: data.data as T },
+        { headers: corsHeaders },
       );
     }
 
